@@ -95,7 +95,7 @@ func _check_rule_1() -> void:
 	if rule and player_behavior.time_in_corridor > 30:
 		_break_rule(rule)
 
-func _find_rule_by_id(rule_id: String) -> Dictionary:
+func _find_rule_by_id(rule_id: String) -> Dictionary?:
 	for rule in rules:
 		if rule.id == rule_id:
 			return rule

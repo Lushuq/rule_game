@@ -46,9 +46,9 @@ func _process(delta: float) -> void:
 	# 应用屏幕抖动
 	if _shake_timer.is_stopped():
 		_shake_offset = Vector2.ZERO
-		position = Vector2.ZERO
+		self.position = Vector2.ZERO
 	else:
-		position = _shake_offset
+		self.position = _shake_offset
 
 func trigger_shake(duration: float = 0.5, intensity: float = 5.0) -> void:
 	_shake_duration = duration
@@ -60,11 +60,11 @@ func _on_shake_timeout() -> void:
 	if _shake_duration <= 0:
 		_shake_timer.stop()
 		_shake_offset = Vector2.ZERO
-		position = Vector2.ZERO
+		self.position = Vector2.ZERO
 	else:
 		_shake_offset = Vector2(
-			random_range(-_shake_intensity, _shake_intensity),
-			random_range(-_shake_intensity, _shake_intensity)
+			randf_range(-_shake_intensity, _shake_intensity),
+			randf_range(-_shake_intensity, _shake_intensity)
 		)
 
 func trigger_color_shift(duration: float = 1.0, target_color: Color = Color(1, 0.8, 0.8)) -> void:
