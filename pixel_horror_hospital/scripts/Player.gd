@@ -81,15 +81,17 @@ func _physics_process(delta: float) -> void:
 		camera.position = Vector2(position.x, position.y)
 
 func _input(event: InputEvent) -> void:
-	# 交互
-	if event.is_action_just_pressed("interact"):
-		_interact()
+	# 只处理按键事件
+	if event is InputEventAction:
+		# 交互
+		if event.is_action_just_pressed("interact"):
+			_interact()
 
-	# 打开/关闭笔记本
-	if event.is_action_just_pressed("notebook"):
-		_notebook_open = not _notebook_open
-		if NotebookUI and NotebookUI.singleton:
-			NotebookUI.singleton.show_notebook(_notebook_open)
+		# 打开/关闭笔记本
+		if event.is_action_just_pressed("notebook"):
+			_notebook_open = not _notebook_open
+			if NotebookUI and NotebookUI.singleton:
+				NotebookUI.singleton.show_notebook(_notebook_open)
 
 func _interact() -> void:
 	# 检测交互对象

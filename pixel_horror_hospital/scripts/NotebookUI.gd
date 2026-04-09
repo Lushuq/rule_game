@@ -28,8 +28,8 @@ func _connect_rule_signal() -> void:
 	if RuleManager and RuleManager.singleton:
 		RuleManager.singleton.rule_discovered.connect(_on_rule_discovered)
 
-func show_notebook(is_visible: bool) -> void:
-	visible = is_visible
+func show_notebook(show: bool) -> void:
+	visible = show
 
 func add_clue(clue: Dictionary) -> void:
 	if not _is_clue_exists(clue.id):
