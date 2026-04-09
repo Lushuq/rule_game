@@ -1,9 +1,10 @@
 """
 《诡则像素：泰安医院》笔记本模块
-Notebook类：界面显示、规则记录、线索整理
+Notebook类：规则记录、线索整理界面
 """
 
 import pygame
+import math
 from constants import (
     VIRTUAL_WIDTH, VIRTUAL_HEIGHT, COLORS
 )
@@ -31,37 +32,25 @@ class Notebook:
         self.items = []
         self.current_page = 0
         self.scroll_offset = 0
-        self.font = None
-        self.small_font = None
         self._init_rules()
     
     def _init_rules(self):
         self.rules = {
             'rule1': Rule(
                 'rule1',
-                '规则一：午夜后不要看镜子，除非你带着红色的东西。',
+                'Rule 1: Be careful what you see.',
                 is_true=True
             ),
             'rule2': Rule(
                 'rule2', 
-                '规则二：灯光下是安全的，但不要让"它们"看到你。',
+                'Rule 2: Lights are safe.',
                 is_true=True
             ),
             'rule3': Rule(
                 'rule3',
-                '规则三：当钟声响起，必须静止不动。',
+                'Rule 3: When the bell rings, stay still.',
                 is_true=False,
-                evolved_text='规则三（已证伪）：钟声响起时，必须移动！静止会引来它们！'
-            ),
-            'rule4': Rule(
-                'rule4',
-                '规则四：午夜时分，所有灯光都会熄灭。那时不要呼吸。',
-                is_true=True
-            ),
-            'rule5': Rule(
-                'rule5',
-                '规则五：红色保护你，但也会引来它们。',
-                is_true=True
+                evolved_text='Rule 3 (false): When the bell rings, MOVE!'
             ),
         }
     
@@ -75,12 +64,12 @@ class Notebook:
     
     def add_clue(self, text, source):
         clue = {'text': text, 'source': source, 'time': pygame.time.get_ticks()}
-        if clue not in self.clues:
+        if not any(c['text'] == text for c in self.clues):
             self.clues.append(clue)
     
     def add_item(self, item_name, description):
         item = {'name': item_name, 'desc': description}
-        if item not in self.items:
+        if not any(i['name'] == item_name for i in self.items):
             self.items.append(item)
     
     def draw(self, surface, time_offset):
@@ -92,7 +81,6 @@ class Notebook:
         self._draw_title(surface)
         self._draw_rules(surface, time_offset)
         self._draw_clues(surface)
-        self._draw_items(surface)
         self._draw_hints(surface)
     
     def _draw_notebook_bg(self, surface, time_offset):
@@ -119,19 +107,9 @@ class Notebook:
         
         border_color = COLORS['notebook_border']
         pygame.draw.rect(surface, border_color, rect, 2)
-        
-        for i in range(3):
-            inner_rect = pygame.Rect(rect.left + i + 1, rect.top + i + 1,
-                                    rect.width - (i + 1) * 2, rect.height - (i + 1) * 2)
-            alpha_color = (
-                border_color[0] - i * 15,
-                border_color[1] - i * 15,
-                border_color[2] - i * 15
-            )
-            pygame.draw.rect(surface, alpha_color, inner_rect, 1)
     
     def _draw_title(self, surface):
-        title = "【 怪谈规则记录 】"
+        title = "NOTEBOOK"
         self._draw_text(surface, title, VIRTUAL_WIDTH // 2, 22, COLORS['text_highlight'], center=True)
         
         pygame.draw.line(surface, COLORS['notebook_border'],
@@ -139,7 +117,7 @@ class Notebook:
     
     def _draw_rules(self, surface, time_offset):
         y = 42
-        self._draw_text(surface, "已发现的规则:", 20, y, COLORS['text_rule'])
+        self._draw_text(surface, "Rules:", 20, y, COLORS['text_rule'])
         y += 12
         
         displayed_rules = [r for r in self.rules.values() if r.discovered]
@@ -149,50 +127,35 @@ class Notebook:
             
             if rule.evolution_discovered:
                 color = COLORS['text_danger']
-                prefix = "⚠ "
             elif not rule.is_true:
                 color = COLORS['text_dim']
-                prefix = "? "
             else:
                 color = COLORS['text_normal']
-                prefix = "• "
             
-            lines = self._wrap_text(prefix + text, 38)
+            lines = self._wrap_text(text, 38)
             for line in lines:
                 self._draw_text(surface, line, 20, y, color)
                 y += 8
         
         if not displayed_rules:
-            self._draw_text(surface, "  (尚未发现任何规则)", 20, y, COLORS['text_dim'])
+            self._draw_text(surface, "  (No rules discovered yet)", 20, y, COLORS['text_dim'])
     
     def _draw_clues(self, surface):
         y = VIRTUAL_HEIGHT - 85
         pygame.draw.line(surface, COLORS['notebook_border'],
                         (25, y - 5), (VIRTUAL_WIDTH - 25, y - 5), 1)
         
-        self._draw_text(surface, "线索:", 20, y, COLORS['text_clue'])
+        self._draw_text(surface, "Clues:", 20, y, COLORS['text_clue'])
         y += 10
         
         recent_clues = self.clues[-3:]
         for clue in recent_clues:
             text = clue['text'][:35] + "..." if len(clue['text']) > 35 else clue['text']
-            self._draw_text(surface, "• " + text, 20, y, COLORS['text_dim'])
-            y += 8
-    
-    def _draw_items(self, surface):
-        if not self.items:
-            return
-        
-        y = VIRTUAL_HEIGHT - 45
-        self._draw_text(surface, "持有物品:", 20, y, COLORS['bright_yellow'])
-        y += 10
-        
-        for item in self.items[:3]:
-            self._draw_text(surface, "• " + item['name'], 25, y, COLORS['text_normal'])
+            self._draw_text(surface, "- " + text, 20, y, COLORS['text_dim'])
             y += 8
     
     def _draw_hints(self, surface):
-        hint_text = "[Tab] 关闭笔记本  [W/S] 滚动"
+        hint_text = "[Tab] Close  [W/S] Scroll"
         self._draw_text(surface, hint_text, VIRTUAL_WIDTH // 2, VIRTUAL_HEIGHT - 15,
                        COLORS['text_dim'], center=True)
     
@@ -208,7 +171,18 @@ class Notebook:
             self._draw_char(surface, char, char_x, y, color)
     
     def _draw_char(self, surface, char, x, y, color):
-        char_patterns = {
+        patterns = self._get_char_patterns()
+        pattern = patterns.get(char, [[2],[2],[2],[2],[2]])
+        
+        for row_idx, row in enumerate(pattern):
+            for col in row:
+                px = x + col
+                py = y + row_idx
+                if 0 <= px < VIRTUAL_WIDTH and 0 <= py < VIRTUAL_HEIGHT:
+                    surface.set_at((px, py), color)
+    
+    def _get_char_patterns(self):
+        return {
             'A': [[1,2,3],[0,4],[0,1,2,3,4],[0,4],[0,4]],
             'B': [[0,1,2,3],[0,4],[0,1,2,3],[0,4],[0,1,2,3]],
             'C': [[1,2,3],[0],[0],[0],[1,2,3]],
@@ -270,12 +244,11 @@ class Notebook:
             '6': [[1,2,3],[0],[0,1,2,3],[0,4],[1,2,3]],
             '7': [[0,1,2,3,4],[4],[3],[2],[1]],
             '8': [[1,2,3],[0,4],[1,2,3],[0,4],[1,2,3]],
-            '9': [[1,2,3],[0,4],[1,2,3,4],[4],[1,2,3]],
+            '9': [[1,2,3],[0,4],[0,1,2,3,4],[4],[1,2,3]],
             ' ': [],
             '.': [[],[],[],[],[2]],
             ',': [[],[],[],[1],[0]],
             ':': [[],[2],[],[2],[]],
-            ';': [[],[2],[],[1],[0]],
             '!': [[2],[2],[2],[],[2]],
             '?': [[0,1,2],[3],[1,2],[],[1]],
             '-': [[],[],[1,2,3],[],[]],
@@ -292,59 +265,7 @@ class Notebook:
             '=': [[],[1,2,3],[],[1,2,3],[]],
             '<': [[3],[2],[1],[2],[3]],
             '>': [[1],[2],[3],[2],[1]],
-            '@': [[1,2,3],[0,3],[0,2,3],[0,3],[1,2]],
-            '#': [[0,2,4],[1,2,3],[0,2,4],[1,2,3],[0,2,4]],
-            '$': [[1,2,3],[0,2],[1,2,3],[2,4],[1,2,3]],
-            '%': [[0,4],[3],[2],[1],[0,4]],
-            '&': [[1,3],[0,4],[1,3],[0,4],[0,3]],
-            '*': [[1,3],[2],[0,1,2,3,4],[2],[1,3]],
-            '~': [[],[1,3],[0,2,4],[],[]],
-            '【': [[0,1,2,3,4],[0],[0],[0],[0,1,2,3,4]],
-            '】': [[0,1,2,3,4],[4],[4],[4],[0,1,2,3,4]],
-            '：': [[],[2],[],[2],[]],
-            '。': [[],[],[],[],[1,2]],
-            '、': [[],[],[],[0],[1]],
-            '一': [[],[1,2,3],[],[],[]],
-            '二': [[0,1,2,3,4],[],[0,1,2,3,4],[],[0,1,2,3,4]],
-            '三': [[0,1,2,3,4],[],[0,1,2,3,4],[],[0,1,2,3,4]],
-            '四': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '五': [[0,1,2,3,4],[0],[0,1,2,3],[4],[0,1,2,3,4]],
-            '中': [[2],[0,1,2,3,4],[2],[2],[2]],
-            '文': [[0,4],[0,4],[1,2,3],[0,4],[0,4]],
-            '规': [[0,1,2,3,4],[0,2,4],[0,2,4],[0,2,4],[0,1,2,3,4]],
-            '则': [[0,1,2,3,4],[4],[0,1,2,3],[0],[0,1,2,3,4]],
-            '记': [[0,1,2,3,4],[0],[0,1,2,3],[0,4],[0,4]],
-            '录': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '已': [[0,1,2,3,4],[2],[1,2,3],[2],[1]],
-            '发': [[0,4],[0,4],[1,2,3],[0,4],[0,4]],
-            '现': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '的': [[0,1,2,3,4],[4],[0,1,2,3],[0],[0,1,2,3,4]],
-            '线': [[0,4],[0,4],[1,2,3],[0,4],[0,4]],
-            '索': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '持': [[0,1,2,3,4],[0],[0,1,2,3],[0,4],[0,4]],
-            '有': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '物': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '品': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '尚': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '未': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '任': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '何': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '关': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '闭': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '笔': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '本': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '滚': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
-            '动': [[0,4],[0,4],[0,1,2,3,4],[0,4],[0,4]],
         }
-        
-        pattern = char_patterns.get(char, [[2],[2],[2],[2],[2]])
-        
-        for row_idx, row in enumerate(pattern):
-            for col in row:
-                px = x + col
-                py = y + row_idx
-                if 0 <= px < VIRTUAL_WIDTH and 0 <= py < VIRTUAL_HEIGHT:
-                    surface.set_at((px, py), color)
     
     def _wrap_text(self, text, max_chars):
         words = text.split(' ')
@@ -369,6 +290,3 @@ class Notebook:
     
     def get_evolved_rules_count(self):
         return sum(1 for r in self.rules.values() if r.evolution_discovered)
-
-
-import math

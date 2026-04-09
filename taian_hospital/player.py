@@ -1,6 +1,6 @@
 """
 《诡则像素：泰安医院》玩家模块
-Player类：移动、碰撞检测、像素绘制
+Player类：左右移动、跳跃、碰撞检测、像素绘制
 """
 
 import pygame
@@ -8,7 +8,7 @@ import math
 import random
 from constants import (
     PLAYER_SPEED, PLAYER_WIDTH, PLAYER_HEIGHT, TILE_SIZE,
-    COLORS, VIRTUAL_WIDTH, VIRTUAL_HEIGHT
+    COLORS, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, GRAVITY, JUMP_FORCE
 )
 
 
@@ -16,12 +16,15 @@ class Player:
     def __init__(self, x, y):
         self.x = float(x)
         self.y = float(y)
+        self.vx = 0.0
+        self.vy = 0.0
         self.width = PLAYER_WIDTH
         self.height = PLAYER_HEIGHT
-        self.facing = 'down'
+        self.facing = 'right'
         self.anim_frame = 0
         self.anim_timer = 0
         self.is_moving = False
+        self.is_grounded = False
         self.flashlight_on = True
         self.interaction_range = 20
         
@@ -36,73 +39,107 @@ class Player:
     def get_feet_rect(self):
         return pygame.Rect(
             int(self.x - self.width // 2),
-            int(self.y),
+            int(self.y + self.height // 2 - 2),
             self.width,
-            self.height // 2
+            4
         )
     
-    def move(self, dx, dy, walls, game_time):
-        if dx == 0 and dy == 0:
-            self.is_moving = False
-            return
-        
-        self.is_moving = True
-        
-        if abs(dx) > abs(dy):
-            self.facing = 'right' if dx > 0 else 'left'
-        else:
-            self.facing = 'down' if dy > 0 else 'up'
-        
-        new_x = self.x + dx * PLAYER_SPEED
-        new_y = self.y + dy * PLAYER_SPEED
-        
-        test_rect = pygame.Rect(
-            int(new_x - self.width // 2),
+    def get_head_rect(self):
+        return pygame.Rect(
+            int(self.x - self.width // 2),
             int(self.y - self.height // 2),
             self.width,
-            self.height
+            4
         )
-        
-        can_move_x = True
-        for wall in walls:
-            if test_rect.colliderect(wall):
-                can_move_x = False
-                break
-        
-        if can_move_x:
-            self.x = new_x
-        
-        test_rect = pygame.Rect(
+    
+    def get_left_rect(self):
+        return pygame.Rect(
             int(self.x - self.width // 2),
-            int(new_y - self.height // 2),
-            self.width,
-            self.height
+            int(self.y - self.height // 2 + 4),
+            2,
+            self.height - 8
         )
+    
+    def get_right_rect(self):
+        return pygame.Rect(
+            int(self.x + self.width // 2 - 2),
+            int(self.y - self.height // 2 + 4),
+            2,
+            self.height - 8
+        )
+    
+    def update(self, keys, walls):
+        self.is_moving = False
+        dx = 0
         
-        can_move_y = True
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            dx = -1
+            self.facing = 'left'
+            self.is_moving = True
+        elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            dx = 1
+            self.facing = 'right'
+            self.is_moving = True
+        
+        self.vx = dx * PLAYER_SPEED
+        
+        if (keys[pygame.K_w] or keys[pygame.K_UP] or keys[pygame.K_SPACE]) and self.is_grounded:
+            self.vy = -JUMP_FORCE
+            self.is_grounded = False
+        
+        self.vy += GRAVITY
+        
+        self.x += self.vx
+        
+        left_rect = self.get_left_rect()
+        right_rect = self.get_right_rect()
+        
         for wall in walls:
-            if test_rect.colliderect(wall):
-                can_move_y = False
-                break
+            if self.vx < 0 and left_rect.colliderect(wall):
+                self.x = wall.right + self.width // 2
+                self.vx = 0
+            elif self.vx > 0 and right_rect.colliderect(wall):
+                self.x = wall.left - self.width // 2
+                self.vx = 0
         
-        if can_move_y:
-            self.y = new_y
+        self.y += self.vy
+        
+        feet_rect = self.get_feet_rect()
+        head_rect = self.get_head_rect()
+        
+        self.is_grounded = False
+        for wall in walls:
+            if self.vy > 0 and feet_rect.colliderect(wall):
+                self.y = wall.top - self.height // 2
+                self.vy = 0
+                self.is_grounded = True
+            elif self.vy < 0 and head_rect.colliderect(wall):
+                self.y = wall.bottom + self.height // 2
+                self.vy = 0
         
         self.x = max(self.width // 2, min(VIRTUAL_WIDTH - self.width // 2, self.x))
-        self.y = max(self.height // 2, min(VIRTUAL_HEIGHT - self.height // 2, self.y))
         
-        self.anim_timer += 1
-        if self.anim_timer >= 8:
-            self.anim_timer = 0
-            self.anim_frame = (self.anim_frame + 1) % 4
+        if self.y > VIRTUAL_HEIGHT:
+            self.y = VIRTUAL_HEIGHT - 50
+            self.vy = 0
+        
+        if self.is_moving:
+            self.anim_timer += 1
+            if self.anim_timer >= 6:
+                self.anim_timer = 0
+                self.anim_frame = (self.anim_frame + 1) % 4
+        else:
+            self.anim_frame = 0
     
     def draw(self, surface, camera_x=0, camera_y=0, sanity=100, time_offset=0):
         draw_x = int(self.x - self.width // 2)
         draw_y = int(self.y - self.height // 2)
         
         bob_offset = 0
-        if self.is_moving:
+        if self.is_moving and self.is_grounded:
             bob_offset = int(math.sin(self.anim_frame * math.pi / 2) * 1)
+        elif not self.is_grounded:
+            bob_offset = -2
         
         body_color = COLORS['skin']
         hair_color = (40, 30, 25)
@@ -120,7 +157,8 @@ class Player:
             for px in range(-1, 13):
                 pixel_color = self._get_pixel_color(px, py, body_color, hair_color, shirt_color, pants_color, bob_offset)
                 if pixel_color:
-                    surface.set_at((draw_x + px, draw_y + py + bob_offset), pixel_color)
+                    final_x = draw_x + px if self.facing == 'right' else draw_x + (12 - px)
+                    surface.set_at((final_x, draw_y + py + bob_offset), pixel_color)
         
         if self.flashlight_on:
             self._draw_flashlight_glow(surface, draw_x, draw_y, bob_offset, time_offset)
@@ -148,6 +186,12 @@ class Player:
             (2, 8), (3, 8), (4, 8), (5, 8), (6, 8), (7, 8), (8, 8), (9, 8),
             (3, 9), (4, 9), (5, 9), (6, 9), (7, 9), (8, 9),
         ]
+        
+        leg_offsets = []
+        if self.anim_frame == 1 or self.anim_frame == 3:
+            leg_offsets = [(0, 0), (0, 0)]
+        elif self.anim_frame == 2:
+            leg_offsets = [(0, 0), (0, 0)]
         
         legs_pattern = [
             (4, 10), (5, 10), (6, 10), (7, 10),
@@ -202,11 +246,7 @@ class Player:
         surface.blit(glow_surface, (0, 0))
     
     def get_interaction_rect(self):
-        if self.facing == 'up':
-            return pygame.Rect(self.x - 10, self.y - 25, 20, 15)
-        elif self.facing == 'down':
-            return pygame.Rect(self.x - 10, self.y + 5, 20, 15)
-        elif self.facing == 'left':
+        if self.facing == 'left':
             return pygame.Rect(self.x - 25, self.y - 10, 15, 20)
         else:
             return pygame.Rect(self.x + 5, self.y - 10, 15, 20)
