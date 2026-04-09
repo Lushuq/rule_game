@@ -31,30 +31,36 @@ func _ready() -> void:
 func setup_input_map() -> void:
 	if not InputMap.has_action("move_left"):
 		InputMap.add_action("move_left")
-		InputMap.action_add_event("move_left", InputEventKey.new())
-		InputMap.get_action_list("move_left")[0].keycode = KEY_A
+		var event = InputEventKey.new()
+		event.keycode = KEY_A
+		InputMap.action_add_event("move_left", event)
 	
 	if not InputMap.has_action("move_right"):
 		InputMap.add_action("move_right")
-		InputMap.action_add_event("move_right", InputEventKey.new())
-		InputMap.get_action_list("move_right")[0].keycode = KEY_D
+		var event = InputEventKey.new()
+		event.keycode = KEY_D
+		InputMap.action_add_event("move_right", event)
 	
 	if not InputMap.has_action("jump"):
 		InputMap.add_action("jump")
-		InputMap.action_add_event("jump", InputEventKey.new())
-		InputMap.get_action_list("jump")[0].keycode = KEY_SPACE
+		var event = InputEventKey.new()
+		event.keycode = KEY_SPACE
+		InputMap.action_add_event("jump", event)
 	
 	if not InputMap.has_action("interact"):
 		InputMap.add_action("interact")
-		InputMap.action_add_event("interact", InputEventKey.new())
-		InputMap.get_action_list("interact")[0].keycode = KEY_E
+		var event = InputEventKey.new()
+		event.keycode = KEY_E
+		InputMap.action_add_event("interact", event)
 	
 	if not InputMap.has_action("toggle_notebook"):
 		InputMap.add_action("toggle_notebook")
-		InputMap.action_add_event("toggle_notebook", InputEventKey.new())
-		InputMap.get_action_list("toggle_notebook")[0].keycode = KEY_TAB
-		InputMap.action_add_event("toggle_notebook", InputEventKey.new())
-		InputMap.get_action_list("toggle_notebook")[1].keycode = KEY_I
+		var event1 = InputEventKey.new()
+		event1.keycode = KEY_TAB
+		InputMap.action_add_event("toggle_notebook", event1)
+		var event2 = InputEventKey.new()
+		event2.keycode = KEY_I
+		InputMap.action_add_event("toggle_notebook", event2)
 
 func setup_connections() -> void:
 	player.interacted.connect(_on_player_interacted)
@@ -91,7 +97,7 @@ func _process(delta: float) -> void:
 	
 	game_time += delta
 	var minutes = int(game_time / 60)
-	var seconds = int(game_time % 60)
+	var seconds = int(game_time) % 60
 	time_label.text = "时间: %02d:%02d" % [minutes, seconds]
 	
 	if clues_collected >= required_clues:
