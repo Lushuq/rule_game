@@ -23,7 +23,15 @@ func _ready() -> void:
 	singleton = self
 
 	# 延迟加载初始房间
-	call_deferred("load_room", "ward")
+	call_deferred("_load_initial_room")
+
+func _load_initial_room() -> void:
+	# 直接加载初始房间
+	var room_scene = rooms["ward"].instantiate()
+	get_tree().root.add_child(room_scene)
+	get_tree().current_scene = room_scene
+	current_room = "ward"
+	room_changed.emit("ward")
 
 func load_room(room_name: String) -> void:
 	if not rooms.has(room_name):
@@ -37,10 +45,8 @@ func load_room(room_name: String) -> void:
 
 	# 加载新房间
 	var room_scene = rooms[room_name].instantiate()
-	# 先添加到场景树
 	get_tree().root.add_child(room_scene)
-	# 延迟设置当前场景，确保场景树操作完成
-	call_deferred("_set_current_scene", room_scene)
+	get_tree().current_scene = room_scene
 
 	# 更新当前房间
 	current_room = room_name
@@ -55,7 +61,3 @@ func set_player(p: Player) -> void:
 
 func get_current_room() -> String:
 	return current_room
-
-func _set_current_scene(scene: Node) -> void:
-	# 延迟设置当前场景
-	get_tree().current_scene = scene
