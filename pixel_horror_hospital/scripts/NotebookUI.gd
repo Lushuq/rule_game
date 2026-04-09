@@ -22,10 +22,11 @@ func _ready() -> void:
 	visible = false
 
 	# 延迟连接信号，确保RuleManager已加载
-	task.defer(func():
-		if RuleManager and RuleManager.singleton:
-			RuleManager.singleton.rule_discovered.connect(_on_rule_discovered)
-	)
+	call_deferred("_connect_rule_signal")
+
+func _connect_rule_signal() -> void:
+	if RuleManager and RuleManager.singleton:
+		RuleManager.singleton.rule_discovered.connect(_on_rule_discovered)
 
 func show_notebook(visible: bool) -> void:
 	self.visible = visible

@@ -39,10 +39,11 @@ func _ready() -> void:
 		interaction_ray = ray
 
 	# 连接信号
-	task.defer(func():
-		if SanityManager and SanityManager.singleton:
-			SanityManager.singleton.connect("sanity_changed", _on_sanity_changed)
-	)
+	call_deferred("_connect_sanity_signal")
+
+func _connect_sanity_signal() -> void:
+	if SanityManager and SanityManager.singleton:
+		SanityManager.singleton.connect("sanity_changed", _on_sanity_changed)
 
 func _physics_process(delta: float) -> void:
 	if _notebook_open:

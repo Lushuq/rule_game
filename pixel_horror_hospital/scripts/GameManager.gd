@@ -36,12 +36,13 @@ func _ready() -> void:
 		add_child(timer)
 
 	# 延迟连接信号并启动游戏
-	task.defer(func():
-		if SanityManager and SanityManager.singleton:
-			SanityManager.singleton.sanity_depleted.connect(_on_sanity_depleted)
-		# 启动游戏
-		start_game()
-	)
+	call_deferred("_connect_signals_and_start")
+
+func _connect_signals_and_start() -> void:
+	if SanityManager and SanityManager.singleton:
+		SanityManager.singleton.sanity_depleted.connect(_on_sanity_depleted)
+	# 启动游戏
+	start_game()
 
 func start_game() -> void:
 	is_playing = true

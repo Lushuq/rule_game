@@ -13,7 +13,7 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 
 func _on_body_entered(body: Node) -> void:
-	if body is Player:
+	if body is Player and RoomManager and RoomManager.singleton:
 		# 切换房间
 		RoomManager.singleton.load_room(target_room)
 		# 设置玩家位置

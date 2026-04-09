@@ -84,10 +84,11 @@ func _generate_night_rules() -> void:
 
 func _process(delta: float) -> void:
 	# 跟踪玩家在走廊的时间
-	if RoomManager.singleton.get_current_room() == "corridor":
-		player_behavior.time_in_corridor += delta
-		# 检查规则1
-		_check_rule_1()
+	if RoomManager and RoomManager.singleton:
+		if RoomManager.singleton.get_current_room() == "corridor":
+			player_behavior.time_in_corridor += delta
+			# 检查规则1
+			_check_rule_1()
 
 func _check_rule_1() -> void:
 	var rule = _find_rule_by_id("rule_1")
@@ -120,20 +121,24 @@ func _break_rule(rule: Dictionary) -> void:
 func _trigger_consequence(rule: Dictionary) -> void:
 	match rule.id:
 		"rule_1":
-			SanityManager.singleton.decrease_sanity(5)
+			if SanityManager and SanityManager.singleton:
+				SanityManager.singleton.decrease_sanity(5)
 		"rule_2":
 			# 触发视觉幻觉
-			VisualEffects.singleton.trigger_hallucination()
+			if VisualEffects and VisualEffects.singleton:
+				VisualEffects.singleton.trigger_hallucination()
 		"rule_3":
 			# 吸引更多鬼魂
 			# 实现鬼魂生成逻辑
 			pass
 		"rule_4":
 			# 遭遇恐怖事件
-			VisualEffects.singleton.trigger_horror_event()
+			if VisualEffects and VisualEffects.singleton:
+				VisualEffects.singleton.trigger_horror_event()
 		"rule_5":
 			# 被误导
-			SanityManager.singleton.decrease_sanity(10)
+			if SanityManager and SanityManager.singleton:
+				SanityManager.singleton.decrease_sanity(10)
 
 func evolve_rule(rule_id: String) -> void:
 	var rule = _find_rule_by_id(rule_id)
