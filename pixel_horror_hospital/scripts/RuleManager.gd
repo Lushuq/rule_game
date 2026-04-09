@@ -127,6 +127,7 @@ func _trigger_consequence(rule: Dictionary) -> void:
 		"rule_3":
 			# 吸引更多鬼魂
 			# 实现鬼魂生成逻辑
+			pass
 		"rule_4":
 			# 遭遇恐怖事件
 			VisualEffects.singleton.trigger_horror_event()

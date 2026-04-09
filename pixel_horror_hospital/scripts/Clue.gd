@@ -29,10 +29,11 @@ func _collect_clue(player: Player) -> void:
 	clue_collected.emit(clue_data)
 
 	# 通知GameManager
-	GameManager.singleton.add_clue()
+	if GameManager and GameManager.singleton:
+		GameManager.singleton.add_clue()
 
 	# 如果线索关联到规则，发现规则
-	if clue_data.rule_id:
+	if clue_data.rule_id and RuleManager and RuleManager.singleton:
 		RuleManager.singleton.discover_rule(clue_data.rule_id)
 
 	# 隐藏线索

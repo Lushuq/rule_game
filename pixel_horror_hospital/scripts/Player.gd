@@ -39,7 +39,10 @@ func _ready() -> void:
 		interaction_ray = ray
 
 	# 连接信号
-	SanityManager.singleton.connect("sanity_changed", _on_sanity_changed)
+	task.defer(func():
+		if SanityManager and SanityManager.singleton:
+			SanityManager.singleton.connect("sanity_changed", _on_sanity_changed)
+	)
 
 func _physics_process(delta: float) -> void:
 	if _notebook_open:
@@ -77,7 +80,8 @@ func _input(event: InputEvent) -> void:
 	# 打开/关闭笔记本
 	if event.is_action_just_pressed("notebook"):
 		_notebook_open = not _notebook_open
-		NotebookUI.singleton.set_visible(_notebook_open)
+		if NotebookUI and NotebookUI.singleton:
+			NotebookUI.singleton.show_notebook(_notebook_open)
 
 func _interact() -> void:
 	# 检测交互对象
@@ -105,4 +109,5 @@ func get_current_room() -> String:
 
 func collect_clue(clue: Dictionary) -> void:
 	collected_clue.emit(clue)
-	NotebookUI.singleton.add_clue(clue)
+	if NotebookUI and NotebookUI.singleton:
+		NotebookUI.singleton.add_clue(clue)
