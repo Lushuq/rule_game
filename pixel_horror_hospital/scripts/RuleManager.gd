@@ -7,7 +7,7 @@ signal rule_evolved(rule: Dictionary, old_rule: Dictionary)
 signal rule_broken(rule: Dictionary)
 
 # 单例
-var singleton: RuleManager = null
+static var singleton: RuleManager = null
 
 # 规则数据
 var rules: Array[Dictionary] = []

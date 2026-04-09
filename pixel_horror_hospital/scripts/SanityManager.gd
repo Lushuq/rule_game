@@ -6,7 +6,7 @@ signal sanity_changed(sanity: float)
 signal sanity_depleted()
 
 # 单例
-var singleton: SanityManager = null
+static var singleton: SanityManager = null
 
 # 内部变量
 var _sanity: float = 100.0

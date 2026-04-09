@@ -2,7 +2,7 @@ class_name VisualEffects
 extends CanvasLayer
 
 # 单例
-var singleton: VisualEffects = null
+static var singleton: VisualEffects = null
 
 # 内部变量
 var _shake_timer: Timer = null

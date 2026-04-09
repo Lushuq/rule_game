@@ -7,7 +7,7 @@ signal game_over(won: bool)
 signal night_ended
 
 # 单例
-var singleton: GameManager = null
+static var singleton: GameManager = null
 
 # 游戏状态
 var is_playing: bool = false

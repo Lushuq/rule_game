@@ -5,7 +5,7 @@ extends Node
 signal room_changed(room_name: String)
 
 # 单例
-var singleton: RoomManager = null
+static var singleton: RoomManager = null
 
 # 房间数据
 var current_room: String = ""

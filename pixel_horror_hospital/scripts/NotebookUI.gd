@@ -2,7 +2,7 @@ class_name NotebookUI
 extends CanvasLayer
 
 # 单例
-var singleton: NotebookUI = null
+static var singleton: NotebookUI = null
 
 # 内部变量
 var clues: Array[Dictionary] = []
