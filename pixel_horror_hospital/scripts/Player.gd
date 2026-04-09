@@ -73,6 +73,11 @@ func _physics_process(delta: float) -> void:
 	self.velocity = velocity
 	move_and_slide()
 
+	# 相机跟随
+	var camera = get_viewport().get_camera_2d()
+	if camera:
+		camera.position = Vector2(position.x, position.y)
+
 func _input(event: InputEvent) -> void:
 	# 交互
 	if event.is_action_just_pressed("interact"):

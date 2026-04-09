@@ -24,3 +24,7 @@ script = ExtResource("4_9m6d1")
 [node name="VisualEffects" parent="." instance=ExtResource("5_5n7e3")]
 
 [node name="NotebookUI" parent="." instance=ExtResource("6_6p8f4")]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+position = Vector2(320, 180)
