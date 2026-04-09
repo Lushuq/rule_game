@@ -13,9 +13,8 @@ var original_camera_position: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
-		var parent = player.get_parent()
-		if parent.has_node("Camera2D"):
-			camera = parent.get_node("Camera2D")
+		if player.has_node("Camera2D"):
+			camera = player.get_node("Camera2D")
 			original_camera_position = camera.position
 
 func trigger_screen_shake(intensity: float = 5.0, duration: float = 0.3) -> void:

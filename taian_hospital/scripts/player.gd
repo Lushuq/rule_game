@@ -45,9 +45,9 @@ func update_sprite_direction() -> void:
 		facing_right = false
 
 func check_interactables() -> void:
-	var interactables = interact_area.get_overlapping_bodies()
+	var interactables = interact_area.get_overlapping_areas()
 	if interactables.size() > 0:
-		current_interactable = interactables[0]
+		current_interactable = interactables[0].get_parent()
 	else:
 		current_interactable = null
 
@@ -59,13 +59,15 @@ func _process(delta: float) -> void:
 		notebook_toggled.emit()
 
 func _ready() -> void:
-	interact_area.body_entered.connect(_on_interact_area_body_entered)
-	interact_area.body_exited.connect(_on_interact_area_body_exited)
+	interact_area.area_entered.connect(_on_interact_area_area_entered)
+	interact_area.area_exited.connect(_on_interact_area_area_exited)
 
-func _on_interact_area_body_entered(body: Node) -> void:
+func _on_interact_area_area_entered(area: Area2D) -> void:
+	var body = area.get_parent()
 	if body.has_method("on_interact"):
 		current_interactable = body
 
-func _on_interact_area_body_exited(body: Node) -> void:
+func _on_interact_area_area_exited(area: Area2D) -> void:
+	var body = area.get_parent()
 	if body == current_interactable:
 		current_interactable = null
