@@ -1,0 +1,277 @@
+[gd_scene load_steps=4 format=3 uid="uid://corridor"]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1_room"]
+[ext_resource type="Script" path="res://scripts/interactable.gd" id="2_interactable"]
+[ext_resource type="Script" path="res://scripts/door.gd" id="3_door"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(1280, 50)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_interactable"]
+size = Vector2(32, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(40, 80)
+
+[node name="Corridor" type="Node2D"]
+script = ExtResource("1_room")
+room_name = "Corridor"
+is_start_room = false
+
+[node name="Background" type="ColorRect" parent="."]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1280.0
+offset_bottom = 360.0
+color = Color(0.03, 0.03, 0.06, 1)
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(640, 335)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="FloorSprite" type="ColorRect" parent="Floor"]
+offset_left = -640.0
+offset_top = -25.0
+offset_right = 640.0
+offset_bottom = 25.0
+color = Color(0.1, 0.1, 0.15, 1)
+
+[node name="Lights" type="Node2D" parent="."]
+
+[node name="Light1" type="PointLight2D" parent="Lights"]
+position = Vector2(200, 100)
+energy = 0.5
+color = Color(0.7, 0.6, 0.4, 1)
+range = 200.0
+shadow_enabled = true
+
+[node name="Light2" type="PointLight2D" parent="Lights"]
+position = Vector2(600, 100)
+energy = 0.5
+color = Color(0.7, 0.6, 0.4, 1)
+range = 200.0
+shadow_enabled = true
+
+[node name="Light3" type="PointLight2D" parent="Lights"]
+position = Vector2(1000, 100)
+energy = 0.5
+color = Color(0.7, 0.6, 0.4, 1)
+range = 200.0
+shadow_enabled = true
+
+[node name="Doors" type="Node2D" parent="."]
+
+[node name="DoorToPatientRoom" type="StaticBody2D" parent="Doors"]
+position = Vector2(60, 260)
+script = ExtResource("3_door")
+target_room = "PatientRoom"
+spawn_position = Vector2(520, 260)
+
+[node name="Sprite2D" type="Sprite2D" parent="Doors/DoorToPatientRoom"]
+modulate = Color(0.4, 0.3, 0.25, 1)
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+offset_bottom = 40.0
+region_enabled = true
+region_rect = Rect2(0, 0, 40, 80)
+
+[node name="DoorSprite" type="ColorRect" parent="Doors/DoorToPatientRoom/Sprite2D"]
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+offset_bottom = 40.0
+color = Color(0.4, 0.3, 0.25, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorToPatientRoom"]
+shape = SubResource("RectangleShape2D_door")
+
+[node name="Area2D" type="Area2D" parent="Doors/DoorToPatientRoom"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorToPatientRoom/Area2D"]
+shape = SubResource("RectangleShape2D_door")
+
+[node name="PointLight2D" type="PointLight2D" parent="Doors/DoorToPatientRoom"]
+energy = 1.0
+color = Color(0.6, 0.5, 0.4, 1)
+range = 80.0
+
+[node name="MessageLabel" type="Label" parent="Doors/DoorToPatientRoom"]
+position = Vector2(0, -60)
+text = "按E键开门"
+horizontal_alignment = 1
+
+[node name="Interactables" type="Node2D" parent="."]
+
+[node name="OldTV" type="StaticBody2D" parent="Interactables"]
+position = Vector2(500, 200)
+script = ExtResource("2_interactable")
+clue_text = "旧电视闪烁着：'别回头'"
+rule_id = "rule_no_look_back"
+clue_index = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="Interactables/OldTV"]
+modulate = Color(0.3, 0.3, 0.35, 1)
+offset_left = -24.0
+offset_top = -20.0
+offset_right = 24.0
+offset_bottom = 20.0
+region_enabled = true
+region_rect = Rect2(0, 0, 48, 40)
+
+[node name="TVSprite" type="ColorRect" parent="Interactables/OldTV/Sprite2D"]
+offset_left = -24.0
+offset_top = -20.0
+offset_right = 24.0
+offset_bottom = 20.0
+color = Color(0.3, 0.3, 0.35, 1)
+
+[node name="TVScreen" type="ColorRect" parent="Interactables/OldTV/Sprite2D"]
+offset_left = -18.0
+offset_top = -14.0
+offset_right = 18.0
+offset_bottom = 10.0
+color = Color(0.05, 0.05, 0.1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/OldTV"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="Area2D" type="Area2D" parent="Interactables/OldTV"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/OldTV/Area2D"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="PointLight2D" type="PointLight2D" parent="Interactables/OldTV"]
+energy = 1.2
+color = Color(0.3, 0.8, 1, 1)
+range = 70.0
+
+[node name="MessageLabel" type="Label" parent="Interactables/OldTV"]
+position = Vector2(0, -50)
+text = "按E键查看"
+horizontal_alignment = 1
+
+[node name="GhostWhisper" type="StaticBody2D" parent="Interactables"]
+position = Vector2(900, 180)
+script = ExtResource("2_interactable")
+clue_text = "鬼魂低语：'看着前方'"
+rule_id = "rule_no_look_back"
+clue_index = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="Interactables/GhostWhisper"]
+modulate = Color(0.6, 0.4, 0.9, 0.6)
+offset_left = -16.0
+offset_top = -24.0
+offset_right = 16.0
+offset_bottom = 24.0
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 48)
+
+[node name="GhostSprite" type="ColorRect" parent="Interactables/GhostWhisper/Sprite2D"]
+offset_left = -16.0
+offset_top = -24.0
+offset_right = 16.0
+offset_bottom = 24.0
+color = Color(0.6, 0.4, 0.9, 0.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/GhostWhisper"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="Area2D" type="Area2D" parent="Interactables/GhostWhisper"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/GhostWhisper/Area2D"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="PointLight2D" type="PointLight2D" parent="Interactables/GhostWhisper"]
+energy = 1.0
+color = Color(0.7, 0.5, 1, 1)
+range = 80.0
+
+[node name="MessageLabel" type="Label" parent="Interactables/GhostWhisper"]
+position = Vector2(0, -50)
+text = "按E键查看"
+horizontal_alignment = 1
+
+[node name="DoorNote" type="StaticBody2D" parent="Interactables"]
+position = Vector2(300, 150)
+script = ExtResource("2_interactable")
+clue_text = "门上的便条：'随手关门'"
+rule_id = "rule_doors"
+clue_index = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="Interactables/DoorNote"]
+modulate = Color(1, 1, 0.9, 1)
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 32)
+
+[node name="NoteSprite" type="ColorRect" parent="Interactables/DoorNote/Sprite2D"]
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+color = Color(1, 1, 0.9, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/DoorNote"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="Area2D" type="Area2D" parent="Interactables/DoorNote"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/DoorNote/Area2D"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="PointLight2D" type="PointLight2D" parent="Interactables/DoorNote"]
+energy = 1.0
+color = Color(1, 1, 0.7, 1)
+range = 60.0
+
+[node name="MessageLabel" type="Label" parent="Interactables/DoorNote"]
+position = Vector2(0, -40)
+text = "按E键查看"
+horizontal_alignment = 1
+
+[node name="BloodText" type="StaticBody2D" parent="Interactables"]
+position = Vector2(1100, 160)
+script = ExtResource("2_interactable")
+clue_text = "墙上的血字：'嘘...'"
+rule_id = "rule_silence"
+clue_index = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="Interactables/BloodText"]
+modulate = Color(0.7, 0.1, 0.1, 1)
+offset_left = -20.0
+offset_top = -12.0
+offset_right = 20.0
+offset_bottom = 12.0
+region_enabled = true
+region_rect = Rect2(0, 0, 40, 24)
+
+[node name="BloodSprite" type="ColorRect" parent="Interactables/BloodText/Sprite2D"]
+offset_left = -20.0
+offset_top = -12.0
+offset_right = 20.0
+offset_bottom = 12.0
+color = Color(0.7, 0.1, 0.1, 0.8)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/BloodText"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="Area2D" type="Area2D" parent="Interactables/BloodText"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/BloodText/Area2D"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="PointLight2D" type="PointLight2D" parent="Interactables/BloodText"]
+energy = 1.0
+color = Color(1, 0.3, 0.3, 1)
+range = 60.0
+
+[node name="MessageLabel" type="Label" parent="Interactables/BloodText"]
+position = Vector2(0, -40)
+text = "按E键查看"
+horizontal_alignment = 1

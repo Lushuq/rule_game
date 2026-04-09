@@ -1,0 +1,83 @@
+[gd_scene load_steps=10 format=3 uid="uid://main"]
+
+[ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
+[ext_resource type="Script" path="res://scripts/rule_manager.gd" id="2_rule"]
+[ext_resource type="Script" path="res://scripts/sanity_manager.gd" id="3_sanity"]
+[ext_resource type="Script" path="res://scripts/effects_manager.gd" id="4_effects"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="5_player"]
+[ext_resource type="PackedScene" path="res://scenes/patient_room.tscn" id="6_patient_room"]
+[ext_resource type="PackedScene" path="res://scenes/corridor.tscn" id="7_corridor"]
+[ext_resource type="PackedScene" path="res://scenes/notebook_ui.tscn" id="8_notebook"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_game")
+
+[node name="RuleManager" type="Node" parent="."]
+script = ExtResource("2_rule")
+
+[node name="SanityManager" type="Node" parent="."]
+script = ExtResource("3_sanity")
+
+[node name="EffectsManager" type="Node" parent="."]
+script = ExtResource("4_effects")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="EffectsManager"]
+color = Color(1, 1, 1, 1)
+
+[node name="RoomManager" type="Node2D" parent="."]
+
+[node name="PatientRoom" parent="RoomManager" instance=ExtResource("6_patient_room")]
+
+[node name="Corridor" parent="RoomManager" instance=ExtResource("7_corridor")]
+
+[node name="Player" parent="." instance=ExtResource("5_player")]
+position = Vector2(320, 200)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position = Vector2(0, 0)
+make_current = true
+
+[node name="GlobalLight" type="DirectionalLight2D" parent="."]
+energy = 0.1
+
+[node name="NotebookUI" parent="." instance=ExtResource("8_notebook")]
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="SanityBar" type="ProgressBar" parent="HUD"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 220.0
+offset_bottom = 45.0
+max_value = 100.0
+value = 100.0
+
+[node name="SanityLabel" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 45.0
+offset_right = 220.0
+offset_bottom = 65.0
+text = "SAN值"
+
+[node name="ClueCountLabel" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 70.0
+offset_right = 220.0
+offset_bottom = 90.0
+text = "线索: 0/5"
+
+[node name="TimeLabel" type="Label" parent="HUD"]
+offset_left = 520.0
+offset_top = 20.0
+offset_right = 620.0
+offset_bottom = 40.0
+text = "时间: 00:00"
+horizontal_alignment = 2
+
+[node name="ControlsLabel" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 320.0
+offset_right = 620.0
+offset_bottom = 340.0
+text = "A/D: 移动 | 空格: 跳跃 | E: 交互 | Tab/I: 笔记本"
+horizontal_alignment = 1

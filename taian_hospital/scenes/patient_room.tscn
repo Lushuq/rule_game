@@ -1,0 +1,183 @@
+[gd_scene load_steps=4 format=3 uid="uid://patient_room"]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1_room"]
+[ext_resource type="Script" path="res://scripts/interactable.gd" id="2_interactable"]
+[ext_resource type="Script" path="res://scripts/door.gd" id="3_door"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(640, 50)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_interactable"]
+size = Vector2(32, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(40, 80)
+
+[node name="PatientRoom" type="Node2D"]
+script = ExtResource("1_room")
+room_name = "PatientRoom"
+is_start_room = true
+
+[node name="Background" type="ColorRect" parent="."]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.05, 0.05, 0.08, 1)
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(320, 335)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="FloorSprite" type="ColorRect" parent="Floor"]
+offset_left = -320.0
+offset_top = -25.0
+offset_right = 320.0
+offset_bottom = 25.0
+color = Color(0.15, 0.15, 0.2, 1)
+
+[node name="Lights" type="Node2D" parent="."]
+
+[node name="RoomLight" type="PointLight2D" parent="Lights"]
+position = Vector2(320, 100)
+energy = 0.8
+color = Color(0.8, 0.7, 0.5, 1)
+range = 250.0
+
+[node name="Doors" type="Node2D" parent="."]
+
+[node name="DoorToCorridor" type="StaticBody2D" parent="Doors"]
+position = Vector2(580, 260)
+script = ExtResource("3_door")
+target_room = "Corridor"
+spawn_position = Vector2(80, 260)
+
+[node name="Sprite2D" type="Sprite2D" parent="Doors/DoorToCorridor"]
+modulate = Color(0.4, 0.3, 0.25, 1)
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+offset_bottom = 40.0
+region_enabled = true
+region_rect = Rect2(0, 0, 40, 80)
+
+[node name="DoorSprite" type="ColorRect" parent="Doors/DoorToCorridor/Sprite2D"]
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+offset_bottom = 40.0
+color = Color(0.4, 0.3, 0.25, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorToCorridor"]
+shape = SubResource("RectangleShape2D_door")
+
+[node name="Area2D" type="Area2D" parent="Doors/DoorToCorridor"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Doors/DoorToCorridor/Area2D"]
+shape = SubResource("RectangleShape2D_door")
+
+[node name="PointLight2D" type="PointLight2D" parent="Doors/DoorToCorridor"]
+energy = 1.0
+color = Color(0.6, 0.5, 0.4, 1)
+range = 80.0
+
+[node name="MessageLabel" type="Label" parent="Doors/DoorToCorridor"]
+position = Vector2(0, -60)
+text = "按E键开门"
+horizontal_alignment = 1
+
+[node name="Interactables" type="Node2D" parent="."]
+
+[node name="NoteOnWall" type="StaticBody2D" parent="Interactables"]
+position = Vector2(100, 150)
+script = ExtResource("2_interactable")
+clue_text = "墙上的便条写着：'灯光是你的朋友'"
+rule_id = "rule_no_lights"
+clue_index = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="Interactables/NoteOnWall"]
+modulate = Color(1, 1, 0.9, 1)
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 32)
+
+[node name="NoteSprite" type="ColorRect" parent="Interactables/NoteOnWall/Sprite2D"]
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+color = Color(1, 1, 0.9, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/NoteOnWall"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="Area2D" type="Area2D" parent="Interactables/NoteOnWall"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/NoteOnWall/Area2D"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="PointLight2D" type="PointLight2D" parent="Interactables/NoteOnWall"]
+energy = 1.0
+color = Color(1, 1, 0.7, 1)
+range = 60.0
+
+[node name="MessageLabel" type="Label" parent="Interactables/NoteOnWall"]
+position = Vector2(0, -40)
+text = "按E键查看"
+horizontal_alignment = 1
+
+[node name="MedicalRecord" type="StaticBody2D" parent="Interactables"]
+position = Vector2(400, 200)
+script = ExtResource("2_interactable")
+clue_text = "病历上有奇怪的备注：'黑暗中有人'"
+rule_id = "rule_no_lights"
+clue_index = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="Interactables/MedicalRecord"]
+modulate = Color(0.95, 0.95, 0.9, 1)
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 32)
+
+[node name="RecordSprite" type="ColorRect" parent="Interactables/MedicalRecord/Sprite2D"]
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 16.0
+offset_bottom = 16.0
+color = Color(0.95, 0.95, 0.9, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/MedicalRecord"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="Area2D" type="Area2D" parent="Interactables/MedicalRecord"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactables/MedicalRecord/Area2D"]
+shape = SubResource("RectangleShape2D_interactable")
+
+[node name="PointLight2D" type="PointLight2D" parent="Interactables/MedicalRecord"]
+energy = 1.0
+color = Color(0.9, 0.9, 0.7, 1)
+range = 60.0
+
+[node name="MessageLabel" type="Label" parent="Interactables/MedicalRecord"]
+position = Vector2(0, -40)
+text = "按E键查看"
+horizontal_alignment = 1
+
+[node name="Bed" type="StaticBody2D" parent="."]
+position = Vector2(200, 280)
+
+[node name="BedSprite" type="ColorRect" parent="Bed"]
+offset_left = -60.0
+offset_top = -20.0
+offset_right = 60.0
+offset_bottom = 20.0
+color = Color(0.3, 0.3, 0.35, 1)
