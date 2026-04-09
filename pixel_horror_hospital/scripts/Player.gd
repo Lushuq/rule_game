@@ -51,26 +51,28 @@ func _physics_process(delta: float) -> void:
 
 	# 获取输入方向
 	var direction := Input.get_axis("left", "right")
-	var velocity := Vector2.ZERO
+	var new_velocity := Vector2.ZERO
 
 	# 水平移动
 	if direction != 0:
-		velocity.x = direction * speed
+		new_velocity.x = direction * speed
 		# 翻转精灵
 		if sprite:
 			sprite.flip_h = direction < 0
 	else:
-		velocity.x = move_toward(velocity.x, 0, speed * 2)
+		new_velocity.x = move_toward(velocity.x, 0, speed * 2)
 
 	# 跳跃
 	if is_on_floor() and Input.is_action_just_pressed("jump"):
-		velocity.y = jump_velocity
+		new_velocity.y = jump_velocity
+	else:
+		new_velocity.y = velocity.y
 
 	# 重力
-	velocity.y += 1000.0 * delta
+	new_velocity.y += 1000.0 * delta
 
 	# 应用速度
-	self.velocity = velocity
+	velocity = new_velocity
 	move_and_slide()
 
 	# 相机跟随

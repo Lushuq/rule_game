@@ -20,7 +20,7 @@ var required_clues: int = 3
 var collected_clues: int = 0
 
 # 节点引用
-@onready var timer: Timer = $Timer
+var timer: Timer = null
 
 func _ready() -> void:
 	if singleton != null:
@@ -28,12 +28,11 @@ func _ready() -> void:
 	singleton = self
 
 	# 创建定时器
-	if not timer:
-		timer = Timer.new()
-		timer.wait_time = 1.0
-		timer.autostart = false
-		timer.timeout.connect(_on_timer_timeout)
-		add_child(timer)
+	timer = Timer.new()
+	timer.wait_time = 1.0
+	timer.autostart = false
+	timer.timeout.connect(_on_timer_timeout)
+	add_child(timer)
 
 	# 延迟连接信号并启动游戏
 	call_deferred("_connect_signals_and_start")

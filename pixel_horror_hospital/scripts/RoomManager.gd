@@ -22,8 +22,8 @@ func _ready() -> void:
 		singleton.queue_free()
 	singleton = self
 
-	# 加载初始房间
-	load_room("ward")
+	# 延迟加载初始房间
+	call_deferred("load_room", "ward")
 
 func load_room(room_name: String) -> void:
 	if not rooms.has(room_name):
@@ -37,7 +37,7 @@ func load_room(room_name: String) -> void:
 
 	# 加载新房间
 	var room_scene = rooms[room_name].instantiate()
-	get_tree().root.add_child(room_scene)
+	get_tree().root.call_deferred("add_child", room_scene)
 	get_tree().current_scene = room_scene
 
 	# 更新当前房间

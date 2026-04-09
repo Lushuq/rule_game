@@ -42,7 +42,7 @@ func _ready() -> void:
 		canvas_modulate.color = Color(1, 1, 1)
 		add_child(canvas_modulate)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	# 应用屏幕抖动
 	if _shake_timer.is_stopped():
 		_shake_offset = Vector2.ZERO
