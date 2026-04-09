@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://bq6k8t7j08r0k"]
+[gd_scene load_steps=6 format=3 uid="uid://bq6k8t7j08r0k"]
 
 [ext_resource type="Script" path="res://scripts/Door.gd" id="1_km95f"]
 [ext_resource type="Script" path="res://scripts/Clue.gd" id="2_7l5b3"]
+[ext_resource type="Script" path="res://scripts/Player.gd" id="3_7k5d4"]
 
 [node name="Corridor" type="Node2D"]
 
@@ -9,6 +10,7 @@
 
 [node name="Player" type="CharacterBody2D" parent="."]
 position = Vector2(100, 200)
+script = ExtResource("3_7k5d4")
 
 [node name="Sprite2D" type="Sprite2D" parent="Player"]
 
