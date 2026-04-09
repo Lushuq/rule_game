@@ -37,8 +37,10 @@ func load_room(room_name: String) -> void:
 
 	# 加载新房间
 	var room_scene = rooms[room_name].instantiate()
-	get_tree().root.call_deferred("add_child", room_scene)
-	get_tree().current_scene = room_scene
+	# 先添加到场景树
+	get_tree().root.add_child(room_scene)
+	# 延迟设置当前场景，确保场景树操作完成
+	call_deferred("_set_current_scene", room_scene)
 
 	# 更新当前房间
 	current_room = room_name
@@ -53,3 +55,7 @@ func set_player(p: Player) -> void:
 
 func get_current_room() -> String:
 	return current_room
+
+func _set_current_scene(scene: Node) -> void:
+	# 延迟设置当前场景
+	get_tree().current_scene = scene
