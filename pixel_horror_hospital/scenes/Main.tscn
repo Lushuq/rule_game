@@ -1,0 +1,26 @@
+[gd_scene load_steps=7 format=3 uid="uid://bq6k8t7j08r0n"]
+
+[ext_resource type="Script" path="res://scripts/RoomManager.gd" id="1_km95f"]
+[ext_resource type="Script" path="res://scripts/RuleManager.gd" id="2_7l5b3"]
+[ext_resource type="Script" path="res://scripts/SanityManager.gd" id="3_8k4c2"]
+[ext_resource type="Script" path="res://scripts/GameManager.gd" id="4_9m6d1"]
+[ext_resource type="PackedScene" path="res://scenes/VisualEffects.tscn" id="5_5n7e3"]
+[ext_resource type="PackedScene" path="res://scenes/NotebookUI.tscn" id="6_6p8f4"]
+
+[node name="Main" type="Node"]
+
+[node name="RoomManager" type="Node" parent="."]
+script = ExtResource("1_km95f")
+
+[node name="RuleManager" type="Node" parent="."]
+script = ExtResource("2_7l5b3")
+
+[node name="SanityManager" type="Node" parent="."]
+script = ExtResource("3_8k4c2")
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("4_9m6d1")
+
+[node name="VisualEffects" parent="." instance=ExtResource("5_5n7e3")]
+
+[node name="NotebookUI" parent="." instance=ExtResource("6_6p8f4")]

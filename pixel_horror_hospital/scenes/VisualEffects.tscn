@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://bq6k8t7j08r0m"]
+
+[ext_resource type="Script" path="res://scripts/VisualEffects.gd" id="1_km95f"]
+
+[node name="VisualEffects" type="CanvasLayer"]
+script = ExtResource("1_km95f")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(1, 1, 1, 1)

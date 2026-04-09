@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=3 uid="uid://bq6k8t7j08r0k"]
+
+[ext_resource type="Script" path="res://scripts/Door.gd" id="1_km95f"]
+[ext_resource type="Script" path="res://scripts/Clue.gd" id="2_7l5b3"]
+
+[node name="Corridor" type="Node2D"]
+
+[node name="TileMap" type="TileMap" parent="."]
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(100, 200)
+
+[node name="Sprite2D" type="Sprite2D" parent="Player"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+position = Vector2(0, 32)
+
+[node name="InteractionRay" type="RayCast2D" parent="Player"]
+position = Vector2(0, 32)
+target_position = Vector2(40, 0)
+
+[node name="Door" type="Area2D" parent="."]
+position = Vector2(50, 200)
+script = ExtResource("1_km95f")
+target_room = "ward"
+spawn_position = Vector2(600, 200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Door"]
+position = Vector2(16, 32)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+position = Vector2(320, 280)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(0, 16)
+
+[node name="Light2D" type="PointLight2D" parent="."]
+position = Vector2(320, 150)
+energy = 2.0
+color = Color(0.2, 0.2, 0.8, 1)
+
+[node name="Clue" type="Area2D" parent="."]
+position = Vector2(400, 200)
+script = ExtResource("2_7l5b3")
+clue_data = {
+"id": "clue_2",
+"text": "病历文件：'患者报告看到镜中自己的异常行为'",
+"rule_id": "rule_2",
+"room": "corridor"
+}
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Clue"]
+position = Vector2(0, 32)
+
+[node name="Sprite2D" type="Sprite2D" parent="Clue"]
