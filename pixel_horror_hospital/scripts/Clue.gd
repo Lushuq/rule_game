@@ -38,4 +38,4 @@ func _collect_clue(player: Player) -> void:
 
 	# 隐藏线索
 	visible = false
-	set_deferred("queue_free")
+	queue_free()
