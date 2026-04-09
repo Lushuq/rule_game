@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>诡则像素：泰安医院</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', monospace;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #000;
+            image-rendering: pixelated;
+        }
+        #game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            z-index: 10;
+        }
+        #game-overlay.hidden {
+            display: none;
+        }
+        #game-overlay h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        #game-overlay p {
+            font-size: 24px;
+            margin-bottom: 40px;
+        }
+        #game-overlay button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #333;
+            color: #fff;
+            border: 2px solid #555;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        #game-overlay button:hover {
+            background-color: #555;
+        }
+        #sanity-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 200px;
+            height: 20px;
+            background-color: #333;
+            border: 2px solid #555;
+        }
+        #sanity-fill {
+            height: 100%;
+            background-color: #0f0;
+            transition: width 0.3s ease;
+        }
+        #notebook {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 5;
+        }
+        #notebook.hidden {
+            display: none;
+        }
+        #notebook h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #notebook .section {
+            margin-bottom: 30px;
+        }
+        #notebook h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #f0f0f0;
+        }
+        #notebook ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #notebook li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        #clue-display {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px 20px;
+            border: 1px solid #555;
+            max-width: 600px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #clue-display.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="sanity-bar">
+        <div id="sanity-fill" style="width: 100%;"></div>
+    </div>
+    <div id="notebook" class="hidden">
+        <h2>笔记本</h2>
+        <div class="section">
+            <h3>收集的线索</h3>
+            <ul id="clues-list"></ul>
+        </div>
+        <div class="section">
+            <h3>规则推理</h3>
+            <ul id="rules-list"></ul>
+        </div>
+        <p style="margin-top: 40px;">按 Tab 键关闭笔记本</p>
+    </div>
+    <div id="clue-display"></div>
+    <div id="game-overlay" class="hidden">
+        <h1 id="game-over-title"></h1>
+        <p id="game-over-message"></p>
+        <button id="restart-button">重新开始</button>
+    </div>
+
+    <script>
+        // 游戏基础架构
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 游戏状态
+        const gameState = {
+            currentRoom: 0,
+            sanity: 100,
+            timeLeft: 300, // 5分钟
+            clues: [],
+            rules: [],
+            isGameOver: false,
+            isNotebookOpen: false,
+            showClue: false,
+            clueText: '',
+            shakeIntensity: 0,
+            colorOffset: 0
+        };
+        
+        // 键盘状态
+        const keys = {
+            w: false,
+            a: false,
+            s: false,
+            d: false,
+            e: false,
+            tab: false
+        };
+        
+        // 玩家对象
+        const player = {
+            x: 400,
+            y: 300,
+            width: 20,
+            height: 30,
+            speed: 3
+        };
+        
+        // 房间定义
+        const rooms = [
+            {
+                name: '病房',
+                walls: [
+                    { x: 0, y: 0, width: 800, height: 50 },
+                    { x: 0, y: 550, width: 800, height: 50 },
+                    { x: 0, y: 0, width: 50, height: 600 },
+                    { x: 750, y: 0, width: 50, height: 600 },
+                    { x: 300, y: 0, width: 50, height: 200 },
+                    { x: 300, y: 400, width: 50, height: 200 }
+                ],
+                doors: [
+                    { x: 300, y: 200, width: 50, height: 50, targetRoom: 1 }
+                ],
+                clues: [
+                    { x: 200, y: 250, text: '便条：不要在走廊上停留超过10秒', type: 'note' },
+                    { x: 500, y: 300, text: '电视闪烁：红色灯光意味着危险', type: 'tv' }
+                ]
+            },
+            {
+                name: '走廊',
+                walls: [
+                    { x: 0, y: 0, width: 800, height: 50 },
+                    { x: 0, y: 550, width: 800, height: 50 },
+                    { x: 0, y: 0, width: 50, height: 600 },
+                    { x: 750, y: 0, width: 50, height: 600 }
+                ],
+                doors: [
+                    { x: 300, y: 200, width: 50, height: 50, targetRoom: 0 },
+                    { x: 500, y: 200, width: 50, height: 50, targetRoom: 0 }
+                ],
+                clues: [
+                    { x: 400, y: 300, text: '墙上的字：夜晚不要相信任何人，包括自己', type: 'writing' },
+                    { x: 600, y: 250, text: '鬼魂低语：镜子里的不是你', type: 'voice' }
+                ]
+            }
+        ];
+        
+        // 规则定义
+        const gameRules = [
+            '不要在走廊上停留超过10秒',
+            '红色灯光意味着危险',
+            '夜晚不要相信任何人，包括自己',
+            '镜子里的不是你',
+            '如果听到哭声，立即关闭所有灯光'
+        ];
+        
+        // 游戏主循环
+        function gameLoop() {
+            // 清屏
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 应用视觉效果
+            if (gameState.shakeIntensity > 0) {
+                const offsetX = (Math.random() - 0.5) * gameState.shakeIntensity;
+                const offsetY = (Math.random() - 0.5) * gameState.shakeIntensity;
+                ctx.save();
+                ctx.translate(offsetX, offsetY);
+                gameState.shakeIntensity -= 0.5;
+            }
+            
+            if (gameState.colorOffset > 0) {
+                // 简单的颜色偏移效果
+                ctx.globalCompositeOperation = 'overlay';
+                ctx.fillStyle = `rgba(255, 0, 0, ${gameState.colorOffset * 0.01})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = 'source-over';
+                gameState.colorOffset -= 1;
+            }
+            
+            // 绘制当前房间
+            drawRoom(rooms[gameState.currentRoom]);
+            
+            // 绘制玩家
+            drawPlayer();
+            
+            // 处理玩家移动
+            handleMovement();
+            
+            // 检查碰撞
+            checkCollisions();
+            
+            // 检查门
+            checkDoors();
+            
+            // 检查线索交互
+            checkClueInteraction();
+            
+            // 更新时间
+            updateTime();
+            
+            // 检查游戏结束条件
+            checkGameOver();
+            
+            // 更新Sanity值显示
+            updateSanityBar();
+            
+            // 显示线索
+            updateClueDisplay();
+            
+            // 恢复画布状态
+            if (gameState.shakeIntensity > 0) {
+                ctx.restore();
+            }
+            
+            // 继续游戏循环
+            if (!gameState.isGameOver) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // 绘制房间
+        function drawRoom(room) {
+            // 绘制墙壁
+            ctx.fillStyle = '#333';
+            room.walls.forEach(wall => {
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+            });
+            
+            // 绘制门
+            ctx.fillStyle = '#666';
+            room.doors.forEach(door => {
+                ctx.fillRect(door.x, door.y, door.width, door.height);
+            });
+            
+            // 绘制线索
+            room.clues.forEach(clue => {
+                if (!gameState.clues.includes(clue.text)) {
+                    switch (clue.type) {
+                        case 'note':
+                            ctx.fillStyle = '#fff';
+                            ctx.fillRect(clue.x - 10, clue.y - 10, 20, 20);
+                            break;
+                        case 'tv':
+                            ctx.fillStyle = '#f00';
+                            ctx.fillRect(clue.x - 15, clue.y - 10, 30, 20);
+                            break;
+                        case 'writing':
+                            ctx.fillStyle = '#800';
+                            ctx.fillRect(clue.x - 20, clue.y - 5, 40, 10);
+                            break;
+                        case 'voice':
+                            ctx.fillStyle = '#00f';
+                            ctx.beginPath();
+                            ctx.arc(clue.x, clue.y, 10, 0, Math.PI * 2);
+                            ctx.fill();
+                            break;
+                    }
+                }
+            });
+        }
+        
+        // 绘制玩家
+        function drawPlayer() {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+        
+        // 处理玩家移动
+        function handleMovement() {
+            if (keys.w) player.y -= player.speed;
+            if (keys.s) player.y += player.speed;
+            if (keys.a) player.x -= player.speed;
+            if (keys.d) player.x += player.speed;
+        }
+        
+        // 检查碰撞
+        function checkCollisions() {
+            const currentRoom = rooms[gameState.currentRoom];
+            
+            // 检查墙壁碰撞
+            currentRoom.walls.forEach(wall => {
+                if (player.x < wall.x + wall.width &&
+                    player.x + player.width > wall.x &&
+                    player.y < wall.y + wall.height &&
+                    player.y + player.height > wall.y) {
+                    // 简单的碰撞响应
+                    if (keys.w) player.y = wall.y + wall.height;
+                    if (keys.s) player.y = wall.y - player.height;
+                    if (keys.a) player.x = wall.x + wall.width;
+                    if (keys.d) player.x = wall.x - player.width;
+                }
+            });
+        }
+        
+        // 检查门
+        function checkDoors() {
+            const currentRoom = rooms[gameState.currentRoom];
+            
+            currentRoom.doors.forEach(door => {
+                if (player.x < door.x + door.width &&
+                    player.x + player.width > door.x &&
+                    player.y < door.y + door.height &&
+                    player.y + player.height > door.y) {
+                    // 切换房间
+                    gameState.currentRoom = door.targetRoom;
+                    // 重置玩家位置
+                    player.x = 400;
+                    player.y = 300;
+                }
+            });
+        }
+        
+        // 检查线索交互
+        function checkClueInteraction() {
+            if (!keys.e) return;
+            
+            const currentRoom = rooms[gameState.currentRoom];
+            
+            currentRoom.clues.forEach(clue => {
+                if (player.x < clue.x + 20 &&
+                    player.x + player.width > clue.x - 20 &&
+                    player.y < clue.y + 20 &&
+                    player.y + player.height > clue.y - 20 &&
+                    !gameState.clues.includes(clue.text)) {
+                    // 收集线索
+                    gameState.clues.push(clue.text);
+                    gameState.showClue = true;
+                    gameState.clueText = clue.text;
+                    
+                    // 更新笔记本
+                    updateNotebook();
+                }
+            });
+        }
+        
+        // 更新笔记本
+        function updateNotebook() {
+            const cluesList = document.getElementById('clues-list');
+            cluesList.innerHTML = '';
+            
+            gameState.clues.forEach(clue => {
+                const li = document.createElement('li');
+                li.textContent = clue;
+                cluesList.appendChild(li);
+            });
+            
+            const rulesList = document.getElementById('rules-list');
+            rulesList.innerHTML = '';
+            
+            gameState.rules.forEach(rule => {
+                const li = document.createElement('li');
+                li.textContent = rule;
+                rulesList.appendChild(li);
+            });
+        }
+        
+        // 更新时间
+        function updateTime() {
+            gameState.timeLeft--;
+            if (gameState.timeLeft < 0) gameState.timeLeft = 0;
+        }
+        
+        // 检查游戏结束条件
+        function checkGameOver() {
+            // 检查Sanity值
+            if (gameState.sanity <= 0) {
+                endGame(false);
+            }
+            
+            // 检查时间
+            if (gameState.timeLeft <= 0) {
+                endGame(true);
+            }
+        }
+        
+        // 结束游戏
+        function endGame(isVictory) {
+            gameState.isGameOver = true;
+            const overlay = document.getElementById('game-overlay');
+            const title = document.getElementById('game-over-title');
+            const message = document.getElementById('game-over-message');
+            
+            if (isVictory) {
+                title.textContent = '胜利！';
+                message.textContent = '你成功存活了第一夜！';
+            } else {
+                title.textContent = '失败！';
+                message.textContent = '你的理智值耗尽了...';
+            }
+            
+            overlay.classList.remove('hidden');
+        }
+        
+        // 更新Sanity值显示
+        function updateSanityBar() {
+            const sanityFill = document.getElementById('sanity-fill');
+            sanityFill.style.width = `${gameState.sanity}%`;
+            
+            // 改变Sanity值颜色
+            if (gameState.sanity > 70) {
+                sanityFill.style.backgroundColor = '#0f0';
+            } else if (gameState.sanity > 30) {
+                sanityFill.style.backgroundColor = '#ff0';
+            } else {
+                sanityFill.style.backgroundColor = '#f00';
+            }
+        }
+        
+        // 更新线索显示
+        function updateClueDisplay() {
+            const clueDisplay = document.getElementById('clue-display');
+            
+            if (gameState.showClue) {
+                clueDisplay.textContent = gameState.clueText;
+                clueDisplay.classList.add('visible');
+                
+                // 3秒后隐藏
+                setTimeout(() => {
+                    gameState.showClue = false;
+                    clueDisplay.classList.remove('visible');
+                }, 3000);
+            }
+        }
+        
+        // 触发恐怖效果
+        function triggerHorrorEffect() {
+            gameState.shakeIntensity = 10;
+            gameState.colorOffset = 50;
+            gameState.sanity -= 10;
+            if (gameState.sanity < 0) gameState.sanity = 0;
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            // 重置游戏状态
+            gameState.currentRoom = 0;
+            gameState.sanity = 100;
+            gameState.timeLeft = 300;
+            gameState.clues = [];
+            gameState.rules = [];
+            gameState.isGameOver = false;
+            gameState.isNotebookOpen = false;
+            gameState.showClue = false;
+            gameState.clueText = '';
+            gameState.shakeIntensity = 0;
+            gameState.colorOffset = 0;
+            
+            // 重置玩家位置
+            player.x = 400;
+            player.y = 300;
+            
+            // 生成规则
+            for (let i = 0; i < 3; i++) {
+                const randomRule = gameRules[Math.floor(Math.random() * gameRules.length)];
+                if (!gameState.rules.includes(randomRule)) {
+                    gameState.rules.push(randomRule);
+                }
+            }
+            
+            // 更新笔记本
+            updateNotebook();
+            
+            // 隐藏覆盖层
+            document.getElementById('game-overlay').classList.add('hidden');
+            document.getElementById('notebook').classList.add('hidden');
+            
+            // 开始游戏循环
+            gameLoop();
+        }
+        
+        // 键盘事件监听
+        document.addEventListener('keydown', (e) => {
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                    keys.w = true;
+                    break;
+                case 'a':
+                    keys.a = true;
+                    break;
+                case 's':
+                    keys.s = true;
+                    break;
+                case 'd':
+                    keys.d = true;
+                    break;
+                case 'e':
+                    keys.e = true;
+                    break;
+                case 'tab':
+                    e.preventDefault();
+                    keys.tab = true;
+                    gameState.isNotebookOpen = !gameState.isNotebookOpen;
+                    const notebook = document.getElementById('notebook');
+                    if (gameState.isNotebookOpen) {
+                        notebook.classList.remove('hidden');
+                    } else {
+                        notebook.classList.add('hidden');
+                    }
+                    break;
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                    keys.w = false;
+                    break;
+                case 'a':
+                    keys.a = false;
+                    break;
+                case 's':
+                    keys.s = false;
+                    break;
+                case 'd':
+                    keys.d = false;
+                    break;
+                case 'e':
+                    keys.e = false;
+                    break;
+                case 'tab':
+                    keys.tab = false;
+                    break;
+            }
+        });
+        
+        // 重新开始按钮
+        document.getElementById('restart-button').addEventListener('click', initGame);
+        
+        // 启动游戏
+        initGame();
+    </script>
+</body>
+</html>
