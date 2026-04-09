@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>规则怪谈模拟器</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="header">
+            <h1>规则怪谈模拟器</h1>
+            <div id="stats">
+                <span>存活时间: <span id="survival-time">0</span>分钟</span>
+                <span>异常次数: <span id="anomaly-count">0</span></span>
+            </div>
+        </div>
+
+        <div id="main-content">
+            <div id="scene-display">
+                <div id="scene-title"></div>
+                <div id="scene-description"></div>
+                <div id="scene-choices"></div>
+            </div>
+
+            <div id="rules-panel">
+                <h2>📜 当前规则</h2>
+                <div id="rules-list"></div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="screen active">
+            <div class="screen-content">
+                <h1>规则怪谈模拟器</h1>
+                <p class="tagline">在这座诡异的建筑中，规则是你唯一的生路...</p>
+                <p class="warning">⚠️ 警告：一旦违反规则，恐怖异常将即刻降临</p>
+                <button id="start-btn">开始探索</button>
+            </div>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+            <div class="screen-content">
+                <h1 id="game-over-title">游戏结束</h1>
+                <p id="game-over-message"></p>
+                <div class="final-stats">
+                    <p>存活时间: <span id="final-time">0</span>分钟</p>
+                    <p>收集规则: <span id="final-rules">0</span>条</p>
+                    <p>经历异常: <span id="final-anomalies">0</span>次</p>
+                </div>
+                <button id="restart-btn">重新开始</button>
+            </div>
+        </div>
+
+        <div id="anomaly-overlay" class="overlay"></div>
+    </div>
+
+    <script src="js/rules.js"></script>
+    <script src="js/scenes.js"></script>
+    <script src="js/anomalies.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>
