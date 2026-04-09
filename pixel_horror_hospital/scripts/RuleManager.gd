@@ -72,7 +72,7 @@ func _ready() -> void:
 
 func _generate_night_rules() -> void:
 	# 随机选择3-5条规则
-	var rule_count = randi_range(3, 5)
+	var rule_count = randi() % 3 + 3  # 3-5
 	var shuffled_pool = rule_pool.duplicate()
 	shuffled_pool.shuffle()
 
@@ -95,11 +95,11 @@ func _check_rule_1() -> void:
 	if rule and player_behavior.time_in_corridor > 30:
 		_break_rule(rule)
 
-func _find_rule_by_id(rule_id: String) -> Dictionary?:
+func _find_rule_by_id(rule_id: String) -> Dictionary:
 	for rule in rules:
 		if rule.id == rule_id:
 			return rule
-	return null
+	return {}
 
 func discover_rule(rule_id: String) -> void:
 	var rule = _find_rule_by_id(rule_id)
